@@ -1,0 +1,30 @@
+---
+# tasks file for conf
+- name: Create new Hostfile
+  command: cp /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/{{ domain_name }}.conf
+  become: yes
+- name: Change server Admin
+  lineinfile:
+    dest: /etc/apache2/sites-available/{{ domain_name }}.conf
+    regexp: "(.*)webmaster@localhost(.*)"
+    line: '\1{{server_admin}}\2'
+    backrefs: yes
+  become: yes
+- name: Add server name
+  lineinfile:
+    dest: /etc/apache2/sites-available/{{ domain_name }}.conf
+    line: 'ServerName {{ domain_name }}'
+    insertbefore: ServerAdmin.*
+  become: yes
+- name: Add server alias
+  lineinfile:
+    dest: /etc/apache2/sites-available/{{ domain_name }}.conf
+    line: 'ServerAlias www.{{ domain_name }}'
+    insertbefore: ServerAdmin.*
+  become: yes
+- name: Enable site
+  command: a2ensite {{ domain_name }}.conf
+  become: yes
+- name: Restart Apache
+  command: service apache2 restart 
+  become: yes
